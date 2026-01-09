@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Escape Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom, #1a1a2e, #16213e);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        header {
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 3.2rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px #00a8ff;
+            color: #00a8ff;
+            letter-spacing: 2px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a9d1ff;
+            margin-bottom: 30px;
+        }
+        
+        .game-wrapper {
+            position: relative;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 800px;
+            height: 500px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 168, 255, 0.3);
+            background-color: #0f3460;
+        }
+        
+        #game-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: linear-gradient(to bottom, #1e3c72, #2a5298);
+            overflow: hidden;
+        }
+        
+        #road {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(to right, #555 1px, transparent 1px),
+                linear-gradient(to bottom, #fff 6%, transparent 6%);
+            background-size: 100px 100%;
+            background-position: center;
+            animation: roadMove 3s linear infinite;
+        }
+        
+        @keyframes roadMove {
+            0% { background-position: center 0; }
+            100% { background-position: center 100px; }
+        }
+        
+        #player-car {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 120px;
+            background-color: #ff4757;
+            border-radius: 10px 10px 4px 4px;
+            z-index: 10;
+            transition: left 0.15s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .car-top {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 40px;
+            background-color: #ff6b81;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .car-window {
+            position: absolute;
+            top: 10px;
+            width: 50px;
+            height: 20px;
+            background-color: #70a1ff;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 4px;
+        }
+        
+        .car-light {
+            position: absolute;
+            width: 10px;
+            height: 8px;
+            background-color: #ffdd59;
+            border-radius: 2px;
+        }
+        
+        .car-light.left {
+            left: 5px;
+            bottom: 20px;
+        }
+        
+        .car-light.right {
+            right: 5px;
+            bottom: 20px;
+        }
+        
+        .car-wheel {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background-color: #333;
+            border-radius: 50%;
+            bottom: -5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .car-wheel::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background-color: #666;
+            border-radius: 50%;
+        }
+        
+        .car-wheel.front {
+            left: 5px;
+        }
+        
+        .car-wheel.back {
+            right: 5px;
+        }
+        
+        .obstacle {
+            position: absolute;
+            width: 70px;
+            height: 100px;
+            background-color: #2ed573;
+            border-radius: 6px;
+            z-index: 5;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .obstacle::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            width: 50px;
+            height: 20px;
+            background-color: #7bed9f;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 4px;
+        }
+        
+        .coin {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background-color: #ffdd59;
+            border-radius: 50%;
+            z-index: 4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px gold;
+        }
+        
+        .coin::after {
+            content: '$';
+            color: #b8860b;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 25px;
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            background: linear-gradient(to right, #00a8ff, #0097e6);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(0, 168, 255, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 168, 255, 0.6);
+            background: linear-gradient(to right, #0097e6, #00a8ff);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn-pause {
+            background: linear-gradient(to right, #ff9f43, #ff793f);
+            box-shadow: 0 5px 15px rgba(255, 159, 67, 0.4);
+        }
+        
+        .btn-pause:hover {
+            background: linear-gradient(to right, #ff793f, #ff9f43);
+            box-shadow: 0 8px 20px rgba(255, 159, 67, 0.6);
+        }
+        
+        .btn-restart {
+            background: linear-gradient(to right, #ff4757, #ff3838);
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+        }
+        
+        .btn-restart:hover {
+            background: linear-gradient(to right, #ff3838, #ff4757);
+            box-shadow: 0 8px 20px rgba(255, 71, 87, 0.6);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-box {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #00a8ff;
+            text-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: #a9d1ff;
+            margin-top: 5px;
+        }
+        
+        .instructions {
+            background-color: rgba(15, 52, 96, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+            border-left: 4px solid #00a8ff;
+        }
+        
+        .instructions h3 {
+            color: #00a8ff;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions p {
+            line-height: 1.6;
+            color: #c8d6e5;
+        }
+        
+        .key {
+            display: inline-block;
+            background-color: #222f3e;
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 0 5px;
+            border: 1px solid #576574;
+        }
+        
+        .game-over, .game-start {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            transition: opacity 0.5s;
+        }
+        
+        .game-over h2, .game-start h2 {
+            font-size: 3.5rem;
+            color: #ff4757;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #ff4757;
+        }
+        
+        .game-start h2 {
+            color: #00a8ff;
+            text-shadow: 0 0 20px #00a8ff;
+        }
+        
+        .final-score {
+            font-size: 2.5rem;
+            color: #ffdd59;
+            margin-bottom: 30px;
+        }
+        
+        .high-score {
+            font-size: 1.5rem;
+            color: #2ed573;
+            margin-bottom: 30px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .paused {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            color: #ff9f43;
+            z-index: 15;
+            text-shadow: 0 0 20px rgba(255, 159, 67, 0.7);
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px 40px;
+            border-radius: 15px;
+            display: none;
+        }
+        
+        footer {
+            margin-top: 30px;
+            color: #a9d1ff;
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .game-wrapper {
+                height: 400px;
+            }
+            
+            .controls {
+                flex-wrap: wrap;
+            }
+            
+            .btn {
+                padding: 12px 20px;
+                font-size: 1rem;
+            }
+            
+            .stat-value {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-car"></i> CAR ESCAPE</h1>
+            <p class="subtitle">Dodge obstacles, collect coins, and survive as long as you can!</p>
+        </header>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-value" id="score">0</div>
+                <div class="stat-label">SCORE</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="coins">0</div>
+                <div class="stat-label">COINS</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="time">0s</div>
+                <div class="stat-label">TIME</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="high-score">0</div>
+                <div class="stat-label">HIGH SCORE</div>
+            </div>
+        </div>
+        
+        <div class="game-wrapper">
+            <div id="game-container">
+                <div id="road"></div>
+                <div id="player-car">
+                    <div class="car-top"></div>
+                    <div class="car-window"></div>
+                    <div class="car-light left"></div>
+                    <div class="car-light right"></div>
+                    <div class="car-wheel front"></div>
+                    <div class="car-wheel back"></div>
+                </div>
+                <!-- Obstacles and coins will be generated by JavaScript -->
+            </div>
+            
+            <div class="paused" id="paused-text">PAUSED</div>
+            
+            <div class="game-start" id="start-screen">
+                <h2>CAR ESCAPE</h2>
+                <p class="final-score">Use arrow keys to dodge obstacles</p>
+                <p class="high-score">Collect coins for extra points</p>
+                <button class="btn" id="start-btn">
+                    <i class="fas fa-play"></i> START GAME
+                </button>
+                <div class="instructions" style="margin-top: 30px; max-width: 500px;">
+                    <h3><i class="fas fa-info-circle"></i> HOW TO PLAY</h3>
+                    <p>Use <span class="key">←</span> and <span class="key">→</span> arrow keys to move your car left and right.</p>
+                    <p>Avoid crashing into other cars and collect <span style="color: gold;">coins</span> for extra points.</p>
+                    <p>Game speeds up over time. How long can you survive?</p>
+                </div>
+            </div>
+            
+            <div class="game-over hidden" id="game-over-screen">
+                <h2>GAME OVER</h2>
+                <p class="final-score">Your Score: <span id="final-score">0</span></p>
+                <p class="high-score">High Score: <span id="display-high-score">0</span></p>
+                <button class="btn btn-restart" id="restart-btn">
+                    <i class="fas fa-redo"></i> PLAY AGAIN
+                </button>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="left-btn">
+                <i class="fas fa-arrow-left"></i> LEFT
+            </button>
+            <button class="btn btn-pause" id="pause-btn">
+                <i class="fas fa-pause"></i> PAUSE
+            </button>
+            <button class="btn" id="right-btn">
+                RIGHT <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-gamepad"></i> CONTROLS</h3>
+            <p>Use <span class="key">←</span> <span class="key">→</span> arrow keys or the LEFT/RIGHT buttons to move your car. Press <span class="key">P</span> or the PAUSE button to pause the game.</p>
+        </div>
+        
+        <footer>
+            <p>Car Escape Game | Created with HTML, CSS, and JavaScript | Use arrow keys to move</p>
+        </footer>
+    </div>
+
+    <script>
+        // Game variables
+        const gameContainer = document.getElementById('game-container');
+        const playerCar = document.getElementById('player-car');
+        const scoreElement = document.getElementById('score');
+        const coinsElement = document.getElementById('coins');
+        const timeElement = document.getElementById('time');
+        const highScoreElement = document.getElementById('high-score');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const leftBtn = document.getElementById('left-btn');
+        const rightBtn = document.getElementById('right-btn');
+        const pausedText = document.getElementById('paused-text');
+        const finalScoreElement = document.getElementById('final-score');
+        const displayHighScoreElement = document.getElementById('display-high-score');
+        
+        let gameActive = false;
+        let gamePaused = false;
+        let score = 0;
+        let coins = 0;
+        let highScore = localStorage.getItem('carEscapeHighScore') || 0;
+        let gameTime = 0;
+        let gameSpeed = 3;
+        let playerPosition = 50; // Percentage from left
+        let gameLoopId;
+        let timeInterval;
+        let obstacles = [];
+        let coinItems = [];
+        
+        // Initialize high score display
+        highScoreElement.textContent = highScore;
+        displayHighScoreElement.textContent = highScore;
+        
+        // Event Listeners
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', startGame);
+        pauseBtn.addEventListener('click', togglePause);
+        
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (!gameActive) return;
+            
+            if (e.key === 'ArrowLeft' || e.key === 'Left') {
+                movePlayer('left');
+            } else if (e.key === 'ArrowRight' || e.key === 'Right') {
+                movePlayer('right');
+            } else if (e.key === 'p' || e.key === 'P') {
+                togglePause();
+            }
+        });
+        
+        // Button controls for mobile/touch
+        leftBtn.addEventListener('mousedown', () => movePlayer('left'));
+        leftBtn.addEventListener('touchstart', () => movePlayer('left'));
+        rightBtn.addEventListener('mousedown', () => movePlayer('right'));
+        rightBtn.addEventListener('touchstart', () => movePlayer('right'));
+        
+        // Stop movement when button is released
+        [leftBtn, rightBtn].forEach(btn => {
+            btn.addEventListener('mouseup', stopPlayer);
+            btn.addEventListener('mouseleave', stopPlayer);
+            btn.addEventListener('touchend', stopPlayer);
+        });
+        
+        function startGame() {
+            // Reset game state
+            gameActive = true;
+            gamePaused = false;
+            score = 0;
+            coins = 0;
+            gameTime = 0;
+            gameSpeed = 3;
+            playerPosition = 50;
+            
+            // Update UI
+            scoreElement.textContent = score;
+            coinsElement.textContent = coins;
+            timeElement.textContent = gameTime + 's';
+            playerCar.style.left = playerPosition + '%';
+            
+            // Hide screens
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            pausedText.style.display = 'none';
+            
+            // Clear existing obstacles and coins
+            obstacles.forEach(obstacle => obstacle.remove());
+            coinItems.forEach(coin => coin.remove());
+            obstacles = [];
+            coinItems = [];
+            
+            // Start game loop
+            clearInterval(gameLoopId);
+            clearInterval(timeInterval);
+            
+            gameLoopId = setInterval(updateGame, 20);
+            timeInterval = setInterval(updateTime, 1000);
+            
+            // Generate initial obstacles and coins
+            generateObstacle();
+            generateCoin();
+        }
+        
+        function updateGame() {
+            if (!gameActive || gamePaused) return;
+            
+            // Move obstacles
+            obstacles.forEach((obstacle, index) => {
+                const top = parseInt(obstacle.style.top) + gameSpeed;
+                obstacle.style.top = top + 'px';
+                
+                // Remove obstacle if it goes off screen
+                if (top > 500) {
+                    obstacle.remove();
+                    obstacles.splice(index, 1);
+                    increaseScore(10);
+                }
+                
+                // Check for collision
+                if (checkCollision(playerCar, obstacle)) {
+                    endGame();
+                }
+            });
+            
+            // Move coins
+            coinItems.forEach((coin, index) => {
+                const top = parseInt(coin.style.top) + gameSpeed;
+                coin.style.top = top + 'px';
+                
+                // Remove coin if it goes off screen
+                if (top > 500) {
+                    coin.remove();
+                    coinItems.splice(index, 1);
+                }
+                
+                // Check for coin collection
+                if (checkCollision(playerCar, coin)) {
+                    coin.remove();
+                    coinItems.splice(index, 1);
+                    coins++;
+                    coinsElement.textContent = coins;
+                    increaseScore(50);
+                    
+                    // Add visual feedback for coin collection
+                    const feedback = document.createElement('div');
+                    feedback.textContent = '+50';
+                    feedback.style.position = 'absolute';
+                    feedback.style.left = playerCar.style.left;
+                    feedback.style.top = '200px';
+                    feedback.style.color = 'gold';
+                    feedback.style.fontWeight = 'bold';
+                    feedback.style.fontSize = '24px';
+                    feedback.style.zIndex = '20';
+                    feedback.style.textShadow = '0 0 5px black';
+                    gameContainer.appendChild(feedback);
+                    
+                    // Animate and remove feedback
+                    let opacity = 1;
+                    const fadeInterval = setInterval(() => {
+                        opacity -= 0.05;
+                        feedback.style.opacity = opacity;
+                        feedback.style.top = parseInt(feedback.style.top) - 2 + 'px';
+                        
+                        if (opacity <= 0) {
+                            clearInterval(fadeInterval);
+                            feedback.remove();
+                        }
+                    }, 30);
+                }
+            });
+            
+            // Occasionally generate new obstacles and coins
+            if (Math.random() < 0.02) {
+                generateObstacle();
+            }
+            
+            if (Math.random() < 0.015) {
+                generateCoin();
+            }
+            
+            // Gradually increase game speed
+            if (gameTime % 10 === 0 && gameTime > 0) {
+                gameSpeed += 0.2;
+            }
+        }
+        
+        function updateTime() {
+            if (!gameActive || gamePaused) return;
+            
+            gameTime++;
+            timeElement.textContent = gameTime + 's';
+            
+            // Add time bonus to score every 5 seconds
+            if (gameTime % 5 === 0) {
+                increaseScore(25);
+            }
+        }
+        
+        function generateObstacle() {
+            const obstacle = document.createElement('div');
+            obstacle.className = 'obstacle';
+            
+            // Random position
+            const left = Math.floor(Math.random() * 80) + 10; // 10% to 90%
+            obstacle.style.left = left + '%';
+            obstacle.style.top = '-100px';
+            
+            // Random color
+            const colors = ['#2ed573', '#ff9f43', '#ff4757', '#3742fa', '#7158e2'];
+            obstacle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            gameContainer.appendChild(obstacle);
+            obstacles.push(obstacle);
+        }
+        
+        function generateCoin() {
+            const coin = document.createElement('div');
+            coin.className = 'coin';
+            
+            // Random position
+            const left = Math.floor(Math.random() * 85) + 7.5; // 7.5% to 92.5%
+            coin.style.left = left + '%';
+            coin.style.top = '-50px';
+            
+            gameContainer.appendChild(coin);
+            coinItems.push(coin);
+        }
+        
+        function movePlayer(direction) {
+            if (!gameActive || gamePaused) return;
+            
+            if (direction === 'left') {
+                playerPosition = Math.max(10, playerPosition - 5);
+            } else if (direction === 'right') {
+                playerPosition = Math.min(90, playerPosition + 5);
+            }
+            
+            playerCar.style.left = playerPosition + '%';
+        }
+        
+        function stopPlayer() {
+            // This function is for button controls to stop continuous movement
+            // In this implementation, movement is discrete, not continuous
+        }
+        
+        function checkCollision(player, element) {
+            const playerRect = player.getBoundingClientRect();
+            const elementRect = element.getBoundingClientRect();
+            
+            return !(
+                playerRect.top > elementRect.bottom ||
+                playerRect.bottom < elementRect.top ||
+                playerRect.left > elementRect.right ||
+                playerRect.right < elementRect.left
+            );
+        }
+        
+        function increaseScore(points) {
+            score += points;
+            scoreElement.textContent = score;
+            
+            // Update high score if needed
+            if (score > highScore) {
+                highScore = score;
+                highScoreElement.textContent = highScore;
+                localStorage.setItem('carEscapeHighScore', highScore);
+            }
+        }
+        
+        function togglePause() {
+            if (!gameActive) return;
+            
+            gamePaused = !gamePaused;
+            
+            if (gamePaused) {
+                pausedText.style.display = 'block';
+                pauseBtn.innerHTML = '<i class="fas fa-play"></i> RESUME';
+                pauseBtn.classList.remove('btn-pause');
+                pauseBtn.classList.add('btn');
+            } else {
+                pausedText.style.display = 'none';
+                pauseBtn.innerHTML = '<i class="fas fa-pause"></i> PAUSE';
+                pauseBtn.classList.add('btn-pause');
+                pauseBtn.classList.remove('btn');
+            }
+        }
+        
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameLoopId);
+            clearInterval(timeInterval);
+            
+            // Update final score displays
+            finalScoreElement.textContent = score;
+            displayHighScoreElement.textContent = highScore;
+            
+            // Show game over screen
+            gameOverScreen.classList.remove('hidden');
+            
+            // Reset pause button
+            pauseBtn.innerHTML = '<i class="fas fa-pause"></i> PAUSE';
+            pauseBtn.classList.add('btn-pause');
+            pauseBtn.classList.remove('btn');
+        }
+        
+        // Initialize game with start screen
+        window.onload = function() {
+            startScreen.classList.remove('hidden');
+        };
+    </script>
+</body>
+</html>
